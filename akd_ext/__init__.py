@@ -1,5 +1,5 @@
-"""AKD Extensions - Misc extension to akd-core."""
+"""AKD Extensions - MCP Extensions for Accelerated Knowledge Discovery."""
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 __all__ = ["__version__"]

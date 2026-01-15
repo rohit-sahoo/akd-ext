@@ -1,3 +1,9 @@
 """Tools module for akd_ext."""
 
-__all__ = []
+from akd_ext.tools.reverse import ReverseTool, ReverseToolInputSchema, ReverseToolOutputSchema
+
+__all__ = [
+    "ReverseTool",
+    "ReverseToolInputSchema",
+    "ReverseToolOutputSchema",
+]
