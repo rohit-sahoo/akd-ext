@@ -1,6 +1,7 @@
 from fastmcp import FastMCP
 
 from akd_ext.tools.reverse import ReverseTool
+from akd_ext.tools.uppercase_tool import UppercaseTool
 from akd_ext.mcp.converter import toolConverter
 
 # Create MCP server
@@ -10,6 +11,7 @@ mcp = FastMCP("akd-ext-tools")
 def register_all_tools():
     tools = [
         ReverseTool(),
+        UppercaseTool(),
     ]
     for tool in tools:
         toolConverter(tool, mcp)
