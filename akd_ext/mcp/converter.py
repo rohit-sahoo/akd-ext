@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, get_type_hints
 from inspect import Signature, Parameter
 from fastmcp import FastMCP
 from akd.tools._base import BaseTool
@@ -10,23 +10,55 @@ def toolConverter(tool: BaseTool, mcp: FastMCP | None = None) -> Callable:
     tool_description = tool.description or ""
     InputModel = tool.input_schema
 
-    # Build function signature from InputModel fields
+    # Build signature from InputModel fields
     field_info = InputModel.model_fields
-    param_names = list(field_info.keys())
-    param_kwargs = ", ".join(f"{name}={name}" for name in param_names)
+    parameters = []
+    annotations = {}
     
-    # Create function with explicit parameters
-    code = f"""async def mcp_tool_wrapper({', '.join(param_names)}):
-    params = InputModel({param_kwargs})
-    result = await tool.arun(params)
-    return result.model_dump()
-"""
-    namespace = {"InputModel": InputModel, "tool": tool}
-    exec(code, namespace)
-    mcp_tool_wrapper = namespace["mcp_tool_wrapper"]
+    for field_name, field in field_info.items():
+        field_type = field.annotation
+        annotations[field_name] = field_type
+        
+        # Create parameter with proper default
+        if field.default is not ...:
+            param = Parameter(
+                field_name,
+                Parameter.POSITIONAL_OR_KEYWORD,
+                default=field.default,
+                annotation=field_type
+            )
+        else:
+            param = Parameter(
+                field_name,
+                Parameter.POSITIONAL_OR_KEYWORD,
+                annotation=field_type
+            )
+        parameters.append(param)
     
+    # Create signature object
+    wrapper_sig = Signature(parameters)
+    
+    # Create closure that captures InputModel and tool
+    def _create_wrapper():
+        async def _async_wrapper(*args, **kwargs):
+            # Bind arguments to signature
+            bound = wrapper_sig.bind(*args, **kwargs)
+            bound.apply_defaults()
+            # Create InputModel instance
+            params = InputModel(**bound.arguments)
+            # Run tool and return result
+            result = await tool.arun(params)
+            return result.model_dump()
+        
+        return _async_wrapper
+    
+    mcp_tool_wrapper = _create_wrapper()
+    
+    # Set function metadata
     mcp_tool_wrapper.__name__ = tool_name
     mcp_tool_wrapper.__doc__ = tool_description
+    mcp_tool_wrapper.__signature__ = wrapper_sig
+    mcp_tool_wrapper.__annotations__ = annotations
 
     if mcp is not None:
         mcp.tool(name=tool_name, description=tool_description)(mcp_tool_wrapper)
