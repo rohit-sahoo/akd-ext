@@ -1,6 +1,7 @@
 from pydantic import Field
 from akd._base import InputSchema, OutputSchema
 from akd.tools._base import BaseTool
+from akd_ext.mcp.decorators import mcp_tool
 
 
 class UppercaseToolInputSchema(InputSchema):
@@ -13,6 +14,7 @@ class UppercaseToolOutputSchema(OutputSchema):
     uppercase_text: str = Field(..., description="Text converted to uppercase")
 
 
+@mcp_tool
 class UppercaseTool(BaseTool):
     """Converts text to uppercase."""
     

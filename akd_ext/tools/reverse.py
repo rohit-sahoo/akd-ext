@@ -1,6 +1,7 @@
 from pydantic import Field
 from akd._base import InputSchema, OutputSchema
 from akd.tools._base import BaseTool
+from akd_ext.mcp.decorators import mcp_tool
 
 
 class ReverseToolInputSchema(InputSchema):
@@ -13,6 +14,7 @@ class ReverseToolOutputSchema(OutputSchema):
     reversed_text: str = Field(..., description="Reversed text")
 
 
+@mcp_tool
 class ReverseTool(BaseTool):
     """Reverses input text."""
     
