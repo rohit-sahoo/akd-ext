@@ -1,15 +1,21 @@
 """Decorators for MCP tool registration."""
 
-from typing import Type
 from akd.tools._base import BaseTool
-
-# Registry for all @mcp_tool decorated classes
-_MCP_TOOL_REGISTRY: list[Type[BaseTool]] = []
+from akd_ext.mcp.registry import mcp_tool_registry
 
 
-def mcp_tool(cls: Type[BaseTool]) -> Type[BaseTool]:
+def mcp_tool(cls: type[BaseTool]) -> type[BaseTool]:
     """
     Decorator to mark a BaseTool class for automatic MCP registration.
+
+    Args:
+        cls: BaseTool subclass to register.
+
+    Returns:
+        The same class, marked with _is_mcp_tool = True.
+
+    Raises:
+        TypeError: If cls is not a BaseTool subclass.
     
     Usage:
         @mcp_tool
@@ -18,17 +24,8 @@ def mcp_tool(cls: Type[BaseTool]) -> Type[BaseTool]:
     """
     if not issubclass(cls, BaseTool):
         raise TypeError(f"@mcp_tool can only be applied to BaseTool subclasses, got {cls}")
-    
-    # Mark class as MCP tool
+
     cls._is_mcp_tool = True
-    
-    # Register in global registry
-    if cls not in _MCP_TOOL_REGISTRY:
-        _MCP_TOOL_REGISTRY.append(cls)
-    
+    mcp_tool_registry.register(cls)
+
     return cls
-
-
-def get_mcp_tools() -> list[Type[BaseTool]]:
-    """Get all classes decorated with @mcp_tool."""
-    return _MCP_TOOL_REGISTRY.copy()
