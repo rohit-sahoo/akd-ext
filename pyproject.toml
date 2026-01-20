@@ -19,7 +19,6 @@ dependencies = [
     "akd @ git+https://github.com/NASA-IMPACT/accelerated-discovery.git@develop",
     "fastmcp>=2.0.0",
     "openai-agents>=0.6.7",
-    "pydantic>=2.0.0",
 ]
 
 [project.urls]
@@ -52,6 +51,8 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "-ra",
+    "--cov=akd_ext",
+    "--cov-report=term-missing",
     "--dist=loadfile",
 ]
 markers = [

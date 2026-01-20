@@ -2,12 +2,13 @@
 
 from collections.abc import Callable
 from inspect import Signature, Parameter
+from typing import Awaitable, Any
 
 from fastmcp import FastMCP
 from akd.tools._base import BaseTool
 
 
-def tool_converter(tool: BaseTool) -> Callable:
+def tool_converter(tool: BaseTool) -> Callable[..., Awaitable[Any]]:
     """
     Convert akd BaseTool to FastMCP-compatible async function.
 
@@ -22,8 +23,8 @@ def tool_converter(tool: BaseTool) -> Callable:
         mcp_func = tool_converter(tool)
         result = await mcp_func(query="hello")
     """
-    tool_name = getattr(tool, 'name', None) or tool.__class__.__name__
-    tool_description = getattr(tool, 'description', None) or ""
+    tool_name = getattr(tool, "name", None) or tool.__class__.__name__
+    tool_description = getattr(tool, "description", None) or ""
     InputModel = tool.input_schema
 
     # Build signature from InputModel fields
@@ -36,18 +37,9 @@ def tool_converter(tool: BaseTool) -> Callable:
         annotations[field_name] = field_type
 
         if field.default is not ...:
-            param = Parameter(
-                field_name,
-                Parameter.POSITIONAL_OR_KEYWORD,
-                default=field.default,
-                annotation=field_type
-            )
+            param = Parameter(field_name, Parameter.POSITIONAL_OR_KEYWORD, default=field.default, annotation=field_type)
         else:
-            param = Parameter(
-                field_name,
-                Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=field_type
-            )
+            param = Parameter(field_name, Parameter.POSITIONAL_OR_KEYWORD, annotation=field_type)
         parameters.append(param)
 
     wrapper_sig = Signature(parameters)
@@ -60,6 +52,7 @@ def tool_converter(tool: BaseTool) -> Callable:
             params = InputModel(**bound.arguments)
             result = await tool.arun(params)
             return result.model_dump()
+
         return _async_wrapper
 
     mcp_tool_wrapper = _create_wrapper()
@@ -73,24 +66,21 @@ def tool_converter(tool: BaseTool) -> Callable:
     return mcp_tool_wrapper
 
 
-def register_mcp_tool(mcp_func: Callable, mcp: FastMCP) -> Callable:
+def register_mcp_tool(mcp_func: Callable[..., Awaitable[Any]], mcp: FastMCP) -> Callable[..., Awaitable[Any]]:
     """
     Register a converted function with FastMCP server.
-        
+
     Args:
         mcp_func: The converted MCP-compatible function (from tool_converter)
         mcp: FastMCP server instance to register the tool with
-        
+
     Returns:
         The registered function.
-    
+
     Example:
         mcp_func = tool_converter(DummyTool())
         register_mcp_tool(mcp_func, mcp)  # Tool now available via MCP
     """
-    mcp.tool(
-        name=mcp_func.__name__,
-        description=mcp_func.__doc__ or ""
-    )(mcp_func)
-    
+    mcp.tool(name=mcp_func.__name__, description=mcp_func.__doc__ or "")(mcp_func)
+
     return mcp_func
