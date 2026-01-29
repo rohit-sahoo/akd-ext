@@ -33,6 +33,7 @@ from akd._base import InputSchema, OutputSchema
 from akd.tools import BaseTool
 from akd_ext.mcp.decorators import mcp_tool
 from pydantic import Field
+from akd_ext.mcp import mcp_tool
 
 
 class DummyInputSchema(InputSchema):
