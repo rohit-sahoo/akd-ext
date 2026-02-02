@@ -1,9 +1,43 @@
 """Tools module for akd_ext."""
 
-from akd_ext.tools.dummy import DummyInputSchema, DummyOutputSchema, DummyTool
+from .dummy import DummyInputSchema, DummyOutputSchema, DummyTool
+from .sde_search import (
+    SDEDocument,
+    SDESearchTool,
+    SDESearchToolConfig,
+    SDESearchToolInputSchema,
+    SDESearchToolOutputSchema,
+)
+from .code_search.code_signals_search import (
+    CodeSignalsHit,
+    CodeSignalsSearchInputSchema,
+    CodeSignalsSearchOutputSchema,
+    CodeSignalsSearchTool,
+    CodeSignalsSearchToolConfig,
+)
+from .code_search.repository_search import (
+    RepositorySearchTool,
+    RepositorySearchToolInputSchema,
+    RepositorySearchToolOutputSchema,
+    RepositorySearchToolConfig,
+)
 
 __all__ = [
     "DummyTool",
     "DummyInputSchema",
     "DummyOutputSchema",
+    "SDESearchTool",
+    "SDESearchToolInputSchema",
+    "SDESearchToolOutputSchema",
+    "SDESearchToolConfig",
+    "SDEDocument",
+    "CodeSignalsHit",
+    "CodeSignalsSearchInputSchema",
+    "CodeSignalsSearchOutputSchema",
+    "CodeSignalsSearchTool",
+    "CodeSignalsSearchToolConfig",
+    "RepositorySearchTool",
+    "RepositorySearchToolInputSchema",
+    "RepositorySearchToolOutputSchema",
+    "RepositorySearchToolConfig",
 ]
