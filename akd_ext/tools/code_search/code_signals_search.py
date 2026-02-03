@@ -73,19 +73,19 @@ class CodeSignalsSearchTool(BaseTool[CodeSignalsSearchInputSchema, CodeSignalsSe
     config_schema = CodeSignalsSearchToolConfig
 
     def _extract_summary(self, content: str) -> str:
-        """Extract only Code Summary lines from code signals."""
+        """Extract all Code Summary sections."""
         if not content:
             return ""
 
         summaries = []
+        
+        for part in content.split("Code Summary:")[1:]:
+            summary = part.split("\n\n")[0].split("===")[0].strip()
+            summary = " ".join(summary.split())
+            if summary:
+                summaries.append(summary)
 
-        for line in content.split("\n"):
-            if line.startswith("Code Summary:"):
-                summary = line.replace("Code Summary:", "").strip()
-                if summary:
-                    summaries.append(summary)
-
-        return "\n\n".join(summaries) if summaries else content[:1500] + "\n... [truncated]"
+        return "\n\n".join(summaries) if summaries else content[:1500]  
 
     def _parse_hit(self, doc: dict[str, Any], query: str) -> CodeSignalsHit:
         """Parse a single document from API response."""
