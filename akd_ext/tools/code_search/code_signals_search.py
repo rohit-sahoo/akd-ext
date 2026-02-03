@@ -32,9 +32,9 @@ class CodeSignalsSearchToolConfig(BaseToolConfig):
         default=30.0,
         description="HTTP request timeout in seconds",
     )
-    search_type: Literal["keyword"] = Field(
-        default="keyword",
-        description="Search type. Only 'keyword' is supported currently.",
+    search_type: Literal["hybrid", "vector", "keyword"] = Field(
+        default="hybrid",
+        description="Search type: 'hybrid' (vector + keyword, recommended), 'vector' (semantic only), 'keyword' (exact matching)",
     )
 
 
@@ -88,7 +88,7 @@ class CodeSignalsSearchTool(BaseTool[CodeSignalsSearchInputSchema, CodeSignalsSe
         request_body = {
             "search_term": params.query,
             "search_type": self.config.search_type,
-            "pageSize": params.limit,
+            "page_size": params.limit,
             "page": params.page,
         }
 
