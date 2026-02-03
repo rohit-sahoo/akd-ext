@@ -43,10 +43,6 @@ class CodeSignalsHit(SearchResult):
 
     repo_id: str | None = Field(None, description="Repository identifier")
     repo_url: str | None = Field(None, description="GitHub repository URL")
-    code_signals: str | None = Field(
-        None,
-        description="LLM-extracted signals: functions, classes, imports, data formats, summary",
-    )
 
 
 class CodeSignalsSearchInputSchema(InputSchema):
@@ -66,7 +62,7 @@ class CodeSignalsSearchOutputSchema(OutputSchema):
 @mcp_tool
 class CodeSignalsSearchTool(BaseTool[CodeSignalsSearchInputSchema, CodeSignalsSearchOutputSchema]):
     """
-    Search NASA code repositories using LLM-extracted code signals.
+    Search code repositories using LLM-extracted code signals.
 
     Use this tool when README-based search is insufficient. Searches through
     extracted function names, class names, imports, data formats, and code summaries.
@@ -85,7 +81,6 @@ class CodeSignalsSearchTool(BaseTool[CodeSignalsSearchInputSchema, CodeSignalsSe
             score=doc.get("score") or doc.get("_score") or 0.0,
             repo_id=doc.get("repo_id"),
             repo_url=doc.get("repo_url"),
-            code_signals=doc.get("code_signals"),
         )
 
     async def _arun(self, params: CodeSignalsSearchInputSchema) -> CodeSignalsSearchOutputSchema:
