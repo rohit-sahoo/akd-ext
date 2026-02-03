@@ -30,11 +30,9 @@ class TestCodeSignalsSearchTool:
         result = await tool.arun(CodeSignalsSearchInputSchema(query=query, limit=5))
 
         assert isinstance(result, CodeSignalsSearchOutputSchema)
-        assert result.total_count >= 0
         assert len(result.results) <= 5
 
         for hit in result.results:
-            assert hasattr(hit, "id")
             assert hasattr(hit, "query")
             assert hasattr(hit, "score")
             assert hit.query == query
@@ -58,9 +56,9 @@ class TestCodeSignalsSearchTool:
         assert len(page2.results) <= 3
 
         if page1.results and page2.results:
-            ids1 = {h.id for h in page1.results}
-            ids2 = {h.id for h in page2.results}
-            assert ids1.isdisjoint(ids2), "Page 1 and page 2 should not overlap"
+            keys1 = {(h.title, h.repo_id) for h in page1.results}
+            keys2 = {(h.title, h.repo_id) for h in page2.results}
+            assert keys1.isdisjoint(keys2), "Page 1 and page 2 should not overlap"
 
     @pytest.mark.parametrize(
         "limit,expected_max",
