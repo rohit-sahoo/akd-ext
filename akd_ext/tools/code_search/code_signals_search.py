@@ -49,7 +49,7 @@ class CodeSignalsSearchInputSchema(InputSchema):
     """Input schema for Code Signals search."""
 
     query: str = Field(..., description="Search query for code functionality")
-    limit: int = Field(default=5, ge=1, le=20, description="Maximum results to return")
+    limit: int = Field(default=5, ge=1, le=6, description="Maximum results to return")
     page: int = Field(default=1, ge=1, description="Page number for pagination")
 
 
@@ -78,14 +78,14 @@ class CodeSignalsSearchTool(BaseTool[CodeSignalsSearchInputSchema, CodeSignalsSe
             return ""
 
         summaries = []
-        
+
         for part in content.split("Code Summary:")[1:]:
             summary = part.split("\n\n")[0].split("===")[0].strip()
             summary = " ".join(summary.split())
             if summary:
                 summaries.append(summary)
 
-        return "\n\n".join(summaries) if summaries else content[:1500]  
+        return "\n\n".join(summaries) if summaries else content[:1500]
 
     def _parse_hit(self, doc: dict[str, Any], query: str) -> CodeSignalsHit:
         """Parse a single document from API response."""
@@ -128,13 +128,6 @@ class CodeSignalsSearchTool(BaseTool[CodeSignalsSearchInputSchema, CodeSignalsSe
                 msg = f"Failed to query Code Signals API: {e}"
                 raise RuntimeError(msg) from e
 
-        if not data.get("success", False):
-            msg = f"Code Signals API returned unsuccessful response: {data}"
-            raise RuntimeError(msg)
-
-        documents = [
-            self._parse_hit(doc, params.query)
-            for doc in data.get("documents", [])
-        ]
+        documents = [self._parse_hit(doc, params.query) for doc in data.get("documents", [])]
 
         return CodeSignalsSearchOutputSchema(results=documents)
