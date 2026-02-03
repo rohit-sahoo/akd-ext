@@ -72,12 +72,29 @@ class CodeSignalsSearchTool(BaseTool[CodeSignalsSearchInputSchema, CodeSignalsSe
     output_schema = CodeSignalsSearchOutputSchema
     config_schema = CodeSignalsSearchToolConfig
 
+    def _extract_summary(self, content: str) -> str:
+        """Extract only Code Summary lines from code signals."""
+        if not content:
+            return ""
+
+        summaries = []
+
+        for line in content.split("\n"):
+            if line.startswith("Code Summary:"):
+                summary = line.replace("Code Summary:", "").strip()
+                if summary:
+                    summaries.append(summary)
+
+        return "\n\n".join(summaries) if summaries else content[:1500] + "\n... [truncated]"
+
     def _parse_hit(self, doc: dict[str, Any], query: str) -> CodeSignalsHit:
         """Parse a single document from API response."""
+        code_signals = doc.get("code_signals") or ""
+
         return CodeSignalsHit(
             query=query,
             title=doc.get("repo_id") or doc.get("name") or "Unknown",
-            content=doc.get("code_signals") or "",
+            content=self._extract_summary(code_signals),
             score=doc.get("score") or doc.get("_score") or 0.0,
             repo_id=doc.get("repo_id"),
             repo_url=doc.get("repo_url"),
